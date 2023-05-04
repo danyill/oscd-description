@@ -11101,13 +11101,22 @@ function getFcdaSubtitleValue(fcdaElement) {
         ? ` ${fcdaElement.getAttribute('prefix')}`
         : ''} ${fcdaElement.getAttribute('lnClass')} ${fcdaElement.getAttribute('lnInst')}`;
 }
-//  {
-//   lD?: string;
-//   lN?: string;
-//   dO?: string;
-//   dA?: string;
-// };
-// TODO: This needs careful review!
+function extRefPath(extRef) {
+    if (!extRef)
+        return 'Unknown';
+    const lN = extRef.closest('LN') ?? extRef.closest('LN0');
+    const lDevice = lN.closest('LDevice');
+    const ldInst = lDevice?.getAttribute('inst');
+    const lnPrefix = lN?.getAttribute('prefix');
+    const lnClass = lN?.getAttribute('lnClass');
+    const lnInst = lN?.getAttribute('inst');
+    return [ldInst, '/', lnPrefix, lnClass, lnInst]
+        .filter(a => a !== null)
+        .join(' ');
+}
+function getExtRefElementsByIED(ied) {
+    return Array.from(ied.querySelectorAll(':scope > AccessPoint > Server > LDevice > LN > Inputs > ExtRef, :scope > AccessPoint > Server > LDevice > LN0 > Inputs > ExtRef'));
+}
 function getFcdaInstDesc(fcda, includeDai) {
     const [doName, daName] = ['doName', 'daName'].map(attr => fcda.getAttribute(attr));
     const ied = fcda.closest('IED');
@@ -11128,11 +11137,14 @@ function getFcdaInstDesc(fcda, includeDai) {
         },
     };
     const lnDesc = anyLn.getAttribute('desc');
-    if (lnDesc)
-        descs = {
-            ...descs,
-            lN: { desc: lnDesc, identity: identity(anyLn), tag: anyLn.tagName },
-        };
+    descs = {
+        ...descs,
+        lN: {
+            ...(lnDesc && { desc: lnDesc }),
+            identity: identity(anyLn),
+            tag: anyLn.tagName,
+        },
+    };
     const doNames = doName.split('.');
     const doi = anyLn.querySelector(`DOI[name="${doNames[0]}"`);
     const doiDesc = doi?.getAttribute('desc');
@@ -11262,7 +11274,7 @@ class Supervision extends s$1 {
     </div>`;
     }
     render() {
-        if (!this.doc)
+        if (!this.doc || !this.selectedIed)
             return x ``;
         // if (!this.selectedIed) return html`<h1>No IEDs present</h1>`;
         const datasets = Array.from(this.doc.querySelectorAll(`IED[name="${this.selectedIed?.getAttribute('name') ?? 'Unknown'}"] DataSet`));
@@ -11275,8 +11287,9 @@ class Supervision extends s$1 {
             dA: 'Data Attribute',
         };
         const usedInfo = ['lD', 'lN', 'dOI'];
-        return x ` <div id="controlSection">${this.renderIedSelector()}</div>
+        return x `<div id="controlSection">${this.renderIedSelector()}</div>
       <section>
+        <h1>Datasets</h1>
         ${Array.from(datasets).map(ds => 
         // <FCDA ldInst="ANN" prefix="PSV" lnClass="GGIO" lnInst="1" doName="Ind64" daName="stVal" fc="ST"/>
         x `
@@ -11305,7 +11318,26 @@ class Supervision extends s$1 {
                   </div>
                 `;
         })}
-            `)};
+            `)}
+      </section>
+      <section>
+        <h1>External References</h1>
+        ${getExtRefElementsByIED(this.selectedIed).map(extRef => x `<div class="grouper-extref">
+              <p class="col-extref">
+                ${extRefPath(extRef)}: ${extRef.getAttribute('intAddr')}
+              </p>
+              <mwc-textfield
+                class="col-extref rounded"
+                label="description"
+                outlined
+                value="${extRef.getAttribute('desc') ?? ''}"
+                data-id="${identity(extRef)}"
+                data-tag="${extRef.tagName}"
+                @input=${(ev) => this.onFilterInput(ev.target)}
+              >
+                ></mwc-textfield
+              >
+            </div>`)}
       </section>`;
     }
 }
@@ -11352,8 +11384,19 @@ Supervision.styles = i$5 `
       align-items: center;
     }
 
+    .grouper-extref {
+      display: flex;
+      width: 100%;
+      align-items: center;
+    }
+
     .col {
       flex: 1 1 25%;
+      padding: 10px;
+    }
+
+    .col-extref {
+      flex: 1 1 0px;
       padding: 10px;
     }
 
