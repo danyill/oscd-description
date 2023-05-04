@@ -71,24 +71,39 @@ export function getFcdaSubtitleValue(fcdaElement: Element): string {
   )}`;
 }
 
+function extRefPath(extRef: Element): string {
+  if (!extRef) return 'Unknown';
+  const lN = extRef.closest('LN') ?? extRef.closest('LN0');
+  const lDevice = lN!.closest('LDevice');
+
+  const ldInst = lDevice?.getAttribute('inst');
+  const lnPrefix = lN?.getAttribute('prefix');
+  const lnClass = lN?.getAttribute('lnClass');
+  const lnInst = lN?.getAttribute('inst');
+
+  return [ldInst, '/', lnPrefix, lnClass, lnInst]
+    .filter(a => a !== null)
+    .join(' ');
+}
+
+function getExtRefElementsByIED(ied: Element): Element[] {
+  return Array.from(
+    ied.querySelectorAll(
+      ':scope > AccessPoint > Server > LDevice > LN > Inputs > ExtRef, :scope > AccessPoint > Server > LDevice > LN0 > Inputs > ExtRef'
+    )
+  );
+}
+
 type fcdaInfo = 'lD' | 'lN' | 'dOI' | 'sDI' | 'dAI';
 
 type FcdaDescriptionText = {
   [key in fcdaInfo]?: {
-    desc: string;
+    desc?: string;
     identity: string | number;
     tag: string;
   };
 };
 
-//  {
-//   lD?: string;
-//   lN?: string;
-//   dO?: string;
-//   dA?: string;
-// };
-
-// TODO: This needs careful review!
 function getFcdaInstDesc(
   fcda: Element,
   includeDai: boolean
@@ -127,11 +142,14 @@ function getFcdaInstDesc(
   };
 
   const lnDesc = anyLn.getAttribute('desc');
-  if (lnDesc)
-    descs = {
-      ...descs,
-      lN: { desc: lnDesc, identity: identity(anyLn), tag: anyLn!.tagName },
-    };
+  descs = {
+    ...descs,
+    lN: {
+      ...(lnDesc && { desc: lnDesc }),
+      identity: identity(anyLn),
+      tag: anyLn!.tagName,
+    },
+  };
 
   const doNames = doName!.split('.');
   const doi = anyLn.querySelector(`DOI[name="${doNames[0]}"`);
@@ -270,7 +288,7 @@ export default class Supervision extends LitElement {
   }
 
   protected render(): TemplateResult {
-    if (!this.doc) return html``;
+    if (!this.doc || !this.selectedIed) return html``;
 
     // if (!this.selectedIed) return html`<h1>No IEDs present</h1>`;
 
@@ -294,8 +312,9 @@ export default class Supervision extends LitElement {
 
     const usedInfo: Partial<fcdaInfo>[] = ['lD', 'lN', 'dOI'];
 
-    return html` <div id="controlSection">${this.renderIedSelector()}</div>
+    return html`<div id="controlSection">${this.renderIedSelector()}</div>
       <section>
+        <h1>Datasets</h1>
         ${Array.from(datasets).map(
           ds =>
             // <FCDA ldInst="ANN" prefix="PSV" lnClass="GGIO" lnInst="1" doName="Ind64" daName="stVal" fc="ST"/>
@@ -336,7 +355,29 @@ export default class Supervision extends LitElement {
                 `;
               })}
             `
-        )};
+        )}
+      </section>
+      <section>
+        <h1>External References</h1>
+        ${getExtRefElementsByIED(this.selectedIed).map(
+          extRef =>
+            html`<div class="grouper-extref">
+              <p class="col-extref">
+                ${extRefPath(extRef)}: ${extRef.getAttribute('intAddr')}
+              </p>
+              <mwc-textfield
+                class="col-extref rounded"
+                label="description"
+                outlined
+                value="${extRef.getAttribute('desc') ?? ''}"
+                data-id="${identity(extRef)}"
+                data-tag="${extRef.tagName}"
+                @input=${(ev: Event) => this.onFilterInput(ev.target)}
+              >
+                ></mwc-textfield
+              >
+            </div>`
+        )}
       </section>`;
   }
 
@@ -401,8 +442,19 @@ export default class Supervision extends LitElement {
       align-items: center;
     }
 
+    .grouper-extref {
+      display: flex;
+      width: 100%;
+      align-items: center;
+    }
+
     .col {
       flex: 1 1 25%;
+      padding: 10px;
+    }
+
+    .col-extref {
+      flex: 1 1 0px;
       padding: 10px;
     }
 
