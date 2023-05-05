@@ -11386,7 +11386,7 @@ Supervision.styles = i$5 `
 
     .grouper-extref {
       display: flex;
-      width: 100%;
+      width: 50%%;
       align-items: center;
     }
 
@@ -11396,6 +11396,7 @@ Supervision.styles = i$5 `
     }
 
     .col-extref {
+      max-width: 400px;
       flex: 1 1 0px;
       padding: 10px;
     }
