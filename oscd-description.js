@@ -11174,7 +11174,7 @@ function getFcdaInstDesc(fcda, includeDai) {
     if (!includeDai || !daName)
         return descs;
     const daNames = daName?.split('.');
-    const dai = previousDI.querySelector(`DAI[name="${daNames[0]}"]`);
+    const dai = (previousDI ?? doi).querySelector(`DAI[name="${daNames[0]}"]`);
     const daiDesc = dai?.getAttribute('desc');
     descs = {
         ...descs,
@@ -11306,7 +11306,7 @@ class Supervision extends s$1 {
 
               ${Array.from(ds.querySelectorAll('FCDA')).map(fcda => {
             const fcdatitle = `${getFcdaSubtitleValue(fcda)} ${getFcdaTitleValue(fcda)}`;
-            const descriptions = getFcdaInstDesc(fcda, true);
+            const descriptions = getFcdaInstDesc(fcda, false);
             return x `
                   <div class="grouper">
                     <div class="title col"><p>${fcdatitle}</p></div>
