@@ -157,7 +157,11 @@ function getFcdaInstDesc(
   if (doiDesc)
     descs = {
       ...descs,
-      dOI: { desc: doiDesc, identity: identity(doi), tag: doi!.tagName },
+      dOI: {
+        ...(doiDesc && { desc: doiDesc }),
+        identity: identity(doi),
+        tag: doi!.tagName,
+      },
     };
 
   let previousDI: Element = doi!;
