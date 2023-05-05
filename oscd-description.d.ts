@@ -25,6 +25,6 @@ export default class Supervision extends LitElement {
     protected updated(_changedProperties: PropertyValues): void;
     private renderIedSelector;
     protected render(): TemplateResult;
-    onFilterInput: (...args: any) => void;
+    onFieldInput: (...args: any) => void;
     static styles: import("lit").CSSResult;
 }

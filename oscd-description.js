@@ -11148,37 +11148,42 @@ function getFcdaInstDesc(fcda, includeDai) {
     const doNames = doName.split('.');
     const doi = anyLn.querySelector(`DOI[name="${doNames[0]}"`);
     const doiDesc = doi?.getAttribute('desc');
-    if (doiDesc)
-        descs = {
-            ...descs,
-            dOI: {
-                ...(doiDesc && { desc: doiDesc }),
-                identity: identity(doi),
-                tag: doi.tagName,
-            },
-        };
+    descs = {
+        ...descs,
+        dOI: {
+            ...(doiDesc && { desc: doiDesc }),
+            identity: identity(doi),
+            tag: doi.tagName,
+        },
+    };
     let previousDI = doi;
     doNames.slice(1).forEach(sdiName => {
         const sdi = previousDI.querySelector(`SDI[name="${sdiName}"]`);
         if (sdi)
             previousDI = sdi;
         const sdiDesc = sdi?.getAttribute('desc');
-        if (sdiDesc)
-            descs = {
-                ...descs,
-                sDI: { desc: sdiDesc, identity: identity(sdi), tag: sdi.tagName },
-            };
+        descs = {
+            ...descs,
+            sDI: {
+                ...(sdiDesc && { desc: sdiDesc }),
+                identity: identity(sdi),
+                tag: sdi.tagName,
+            },
+        };
     });
     if (!includeDai || !daName)
         return descs;
     const daNames = daName?.split('.');
     const dai = previousDI.querySelector(`DAI[name="${daNames[0]}"]`);
     const daiDesc = dai?.getAttribute('desc');
-    if (daiDesc)
-        descs = {
-            ...descs,
-            dAI: { desc: daiDesc, identity: identity(dai), tag: dai.tagName },
-        };
+    descs = {
+        ...descs,
+        dAI: {
+            ...(daiDesc && { desc: daiDesc }),
+            identity: identity(dai),
+            tag: dai.tagName,
+        },
+    };
     return descs;
 }
 /**
@@ -11189,14 +11194,14 @@ class Supervision extends s$1 {
         super(...arguments);
         this.controlType = 'GOOSE';
         this.selectedIEDs = [];
-        this.onFilterInput = debounce((target) => {
+        this.onFieldInput = debounce((target) => {
             const { value } = target;
             const { id, tag } = target.dataset;
             if (!id || !tag)
                 return;
             const sclElement = this.doc.querySelector(selector(tag ?? 'Unknown', id ?? 'Unknown')) ??
                 undefined;
-            if (sclElement && value) {
+            if (sclElement) {
                 const edit = {
                     element: sclElement,
                     attributes: { desc: value },
@@ -11313,7 +11318,7 @@ class Supervision extends s$1 {
                                 value="${descriptions[descType]?.desc ?? ''}"
                                 data-id="${descriptions[descType]?.identity}"
                                 data-tag="${descriptions[descType]?.tag}"
-                                @input=${(ev) => this.onFilterInput(ev.target)}
+                                @input=${(ev) => this.onFieldInput(ev.target)}
                               >
                                 ></mwc-textfield
                               >`)
@@ -11337,7 +11342,7 @@ class Supervision extends s$1 {
                 value="${extRef.getAttribute('desc') ?? ''}"
                 data-id="${identity(extRef)}"
                 data-tag="${extRef.tagName}"
-                @input=${(ev) => this.onFilterInput(ev.target)}
+                @input=${(ev) => this.onFieldInput(ev.target)}
               >
                 ></mwc-textfield
               >
