@@ -11147,6 +11147,8 @@ function getFcdaInstDesc(fcda, includeDai) {
     };
     const doNames = doName.split('.');
     const doi = anyLn.querySelector(`DOI[name="${doNames[0]}"`);
+    if (!doi)
+        return descs;
     const doiDesc = doi?.getAttribute('desc');
     descs = {
         ...descs,
