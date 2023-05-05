@@ -309,7 +309,7 @@ export default class Supervision extends LitElement {
     const labels: Partial<Record<string, string>> = {
       lD: 'Logical Device',
       lN: 'Logical Node',
-      dO: 'Data Object',
+      dOI: 'Data Object',
       sDO: 'Sub Data Object',
       dA: 'Data Attribute',
     };
