@@ -154,26 +154,28 @@ function getFcdaInstDesc(
   const doNames = doName!.split('.');
   const doi = anyLn.querySelector(`DOI[name="${doNames[0]}"`);
   const doiDesc = doi?.getAttribute('desc');
-  if (doiDesc)
-    descs = {
-      ...descs,
-      dOI: {
-        ...(doiDesc && { desc: doiDesc }),
-        identity: identity(doi),
-        tag: doi!.tagName,
-      },
-    };
+  descs = {
+    ...descs,
+    dOI: {
+      ...(doiDesc && { desc: doiDesc }),
+      identity: identity(doi),
+      tag: doi!.tagName,
+    },
+  };
 
   let previousDI: Element = doi!;
   doNames.slice(1).forEach(sdiName => {
     const sdi = previousDI.querySelector(`SDI[name="${sdiName}"]`);
     if (sdi) previousDI = sdi;
     const sdiDesc = sdi?.getAttribute('desc');
-    if (sdiDesc)
-      descs = {
-        ...descs,
-        sDI: { desc: sdiDesc, identity: identity(sdi), tag: sdi!.tagName },
-      };
+    descs = {
+      ...descs,
+      sDI: {
+        ...(sdiDesc && { desc: sdiDesc }),
+        identity: identity(sdi),
+        tag: sdi!.tagName,
+      },
+    };
   });
 
   if (!includeDai || !daName) return descs;
@@ -181,11 +183,14 @@ function getFcdaInstDesc(
   const daNames = daName?.split('.');
   const dai = previousDI.querySelector(`DAI[name="${daNames[0]}"]`);
   const daiDesc = dai?.getAttribute('desc');
-  if (daiDesc)
-    descs = {
-      ...descs,
-      dAI: { desc: daiDesc, identity: identity(dai), tag: dai!.tagName },
-    };
+  descs = {
+    ...descs,
+    dAI: {
+      ...(daiDesc && { desc: daiDesc }),
+      identity: identity(dai),
+      tag: dai!.tagName,
+    },
+  };
 
   return descs;
 }
@@ -347,7 +352,7 @@ export default class Supervision extends LitElement {
                                 data-id="${descriptions[descType]?.identity}"
                                 data-tag="${descriptions[descType]?.tag}"
                                 @input=${(ev: Event) =>
-                                  this.onFilterInput(ev.target)}
+                                  this.onFieldInput(ev.target)}
                               >
                                 ></mwc-textfield
                               >`
@@ -376,7 +381,7 @@ export default class Supervision extends LitElement {
                 value="${extRef.getAttribute('desc') ?? ''}"
                 data-id="${identity(extRef)}"
                 data-tag="${extRef.tagName}"
-                @input=${(ev: Event) => this.onFilterInput(ev.target)}
+                @input=${(ev: Event) => this.onFieldInput(ev.target)}
               >
                 ></mwc-textfield
               >
@@ -385,7 +390,7 @@ export default class Supervision extends LitElement {
       </section>`;
   }
 
-  onFilterInput = debounce((target: HTMLElement) => {
+  onFieldInput = debounce((target: HTMLElement) => {
     const { value } = <TextField>target;
     const { id, tag } = (<TextField>target)!.dataset;
     if (!id || !tag) return;
@@ -393,7 +398,7 @@ export default class Supervision extends LitElement {
       this.doc.querySelector(selector(tag ?? 'Unknown', id ?? 'Unknown')) ??
       undefined;
 
-    if (sclElement && value) {
+    if (sclElement) {
       const edit: Update = {
         element: sclElement,
         attributes: { desc: value },
