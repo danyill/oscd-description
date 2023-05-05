@@ -11286,7 +11286,7 @@ class Supervision extends s$1 {
         const labels = {
             lD: 'Logical Device',
             lN: 'Logical Node',
-            dO: 'Data Object',
+            dOI: 'Data Object',
             sDO: 'Sub Data Object',
             dA: 'Data Attribute',
         };
