@@ -2,6 +2,9 @@
 <xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
   <file target-language="pt" source-language="en" original="lit-localize-inputs" datatype="plaintext">
     <body>
+<trans-unit id="sea11dca330eece71">
+  <source>&lt;p&gt;FCDA is incorrectly defined&lt;/p&gt;</source>
+</trans-unit>
     </body>
   </file>
 </xliff>
