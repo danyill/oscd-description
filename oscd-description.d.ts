@@ -7,13 +7,13 @@ import '@material/mwc-list/mwc-list-item';
 import '@material/mwc-list/mwc-radio-list-item';
 import '@material/mwc-icon-button-toggle';
 import '@material/mwc-icon';
-import '@material/mwc-icon-button';
+import type { IconButtonToggle } from '@material/mwc-icon-button-toggle';
 import './foundation/components/oscd-filter-button.js';
 export declare function getFcdaSubtitleValue(fcdaElement: Element): string;
 /**
  * Editor for GOOSE and SMV supervision LNs
  */
-export default class Supervision extends LitElement {
+export default class Description extends LitElement {
     doc: XMLDocument;
     docName: string;
     editCount: number;
@@ -21,9 +21,23 @@ export default class Supervision extends LitElement {
     private get iedList();
     selectedIEDs: string[];
     private get selectedIed();
-    protected firstUpdated(): void;
+    dataSetSectionUI: HTMLElement;
+    dataSetExpanderButtonUI: IconButtonToggle;
+    extRefSectionUI: HTMLElement;
+    extRefExpanderButtonUI: IconButtonToggle;
+    anyDataSetExpanded: boolean;
+    anyExtRefSectionExpanded: boolean;
     protected updated(_changedProperties: PropertyValues): void;
     private renderIedSelector;
+    protected updateExtRefSectionExpanded(): void;
+    protected updateDatasetSectionExpanded(): void;
+    protected renderDataSetFcdas(ds: Element): TemplateResult;
+    protected renderDataSetHeader(): TemplateResult;
+    protected renderDataSets(): TemplateResult;
+    protected renderInputExtRefs(inputs: Element): TemplateResult;
+    protected renderExtRefsHeader(): TemplateResult;
+    protected renderTextField(sclElement: Element, label?: string): TemplateResult;
+    protected renderExtRefs(): TemplateResult;
     protected render(): TemplateResult;
     onFieldInput: (...args: any) => void;
     static styles: import("lit").CSSResult;

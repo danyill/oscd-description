@@ -146,6 +146,98 @@ function e$3(e){return o$2({descriptor:r=>({async get(){var r;return await this.
 /**
  * @license
  * Copyright 2021 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+const isStrTagged = (val) => typeof val !== 'string' && 'strTag' in val;
+/**
+ * Render the result of a `str` tagged template to a string. Note we don't need
+ * to do this for Lit templates, since Lit itself handles rendering.
+ */
+const joinStringsAndValues = (strings, values, valueOrder) => {
+    let concat = strings[0];
+    for (let i = 1; i < strings.length; i++) {
+        concat += values[valueOrder ? valueOrder[i - 1] : i - 1];
+        concat += strings[i];
+    }
+    return concat;
+};
+
+/**
+ * @license
+ * Copyright 2021 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+/**
+ * Default identity msg implementation. Simply returns the input template with
+ * no awareness of translations. If the template is str-tagged, returns it in
+ * string form.
+ */
+const defaultMsg = ((template) => isStrTagged(template)
+    ? joinStringsAndValues(template.strings, template.values)
+    : template);
+
+/**
+ * @license
+ * Copyright 2020 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+class Deferred {
+    constructor() {
+        this.settled = false;
+        this.promise = new Promise((resolve, reject) => {
+            this._resolve = resolve;
+            this._reject = reject;
+        });
+    }
+    resolve(value) {
+        this.settled = true;
+        this._resolve(value);
+    }
+    reject(error) {
+        this.settled = true;
+        this._reject(error);
+    }
+}
+
+/**
+ * @license
+ * Copyright 2014 Travis Webb
+ * SPDX-License-Identifier: MIT
+ */
+for (let i = 0; i < 256; i++) {
+    ((i >> 4) & 15).toString(16) + (i & 15).toString(16);
+}
+
+/**
+ * @license
+ * Copyright 2021 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+let loading = new Deferred();
+// The loading promise must be initially resolved, because that's what we should
+// return if the user immediately calls setLocale(sourceLocale).
+loading.resolve();
+
+/**
+ * @license
+ * Copyright 2020 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+/**
+ * Make a string or lit-html template localizable.
+ *
+ * @param template A string, a lit-html template, or a function that returns
+ * either a string or lit-html template.
+ * @param options Optional configuration object with the following properties:
+ *   - id: Optional project-wide unique identifier for this template. If
+ *     omitted, an id will be automatically generated from the template strings.
+ *   - desc: Optional description
+ */
+let msg = defaultMsg;
+
+/**
+ * @license
+ * Copyright 2021 Google LLC
  * SPDX-LIcense-Identifier: Apache-2.0
  */
 const styles$d = i$5 `:host{font-family:var(--mdc-icon-font, "Material Icons");font-weight:normal;font-style:normal;font-size:var(--mdc-icon-size, 24px);line-height:1;letter-spacing:normal;text-transform:none;display:inline-block;white-space:nowrap;word-wrap:normal;direction:ltr;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;-moz-osx-font-smoothing:grayscale;font-feature-settings:"liga"}`;
@@ -6228,138 +6320,6 @@ IconButtonToggle = __decorate([
     e$6('mwc-icon-button-toggle')
 ], IconButtonToggle);
 
-/**
- * @license
- * Copyright 2018 Google LLC
- * SPDX-License-Identifier: Apache-2.0
- */
-/** @soyCompatible */
-class IconButtonBase extends s$1 {
-    constructor() {
-        super(...arguments);
-        this.disabled = false;
-        this.icon = '';
-        this.shouldRenderRipple = false;
-        this.rippleHandlers = new RippleHandlers(() => {
-            this.shouldRenderRipple = true;
-            return this.ripple;
-        });
-    }
-    /** @soyTemplate */
-    renderRipple() {
-        return this.shouldRenderRipple ? x `
-            <mwc-ripple
-                .disabled="${this.disabled}"
-                unbounded>
-            </mwc-ripple>` :
-            '';
-    }
-    focus() {
-        const buttonElement = this.buttonElement;
-        if (buttonElement) {
-            this.rippleHandlers.startFocus();
-            buttonElement.focus();
-        }
-    }
-    blur() {
-        const buttonElement = this.buttonElement;
-        if (buttonElement) {
-            this.rippleHandlers.endFocus();
-            buttonElement.blur();
-        }
-    }
-    /** @soyTemplate */
-    render() {
-        return x `<button
-        class="mdc-icon-button mdc-icon-button--display-flex"
-        aria-label="${this.ariaLabel || this.icon}"
-        aria-haspopup="${l$1(this.ariaHasPopup)}"
-        ?disabled="${this.disabled}"
-        @focus="${this.handleRippleFocus}"
-        @blur="${this.handleRippleBlur}"
-        @mousedown="${this.handleRippleMouseDown}"
-        @mouseenter="${this.handleRippleMouseEnter}"
-        @mouseleave="${this.handleRippleMouseLeave}"
-        @touchstart="${this.handleRippleTouchStart}"
-        @touchend="${this.handleRippleDeactivate}"
-        @touchcancel="${this.handleRippleDeactivate}"
-    >${this.renderRipple()}
-    ${this.icon ? x `<i class="material-icons">${this.icon}</i>` : ''}
-    <span
-      ><slot></slot
-    ></span>
-  </button>`;
-    }
-    handleRippleMouseDown(event) {
-        const onUp = () => {
-            window.removeEventListener('mouseup', onUp);
-            this.handleRippleDeactivate();
-        };
-        window.addEventListener('mouseup', onUp);
-        this.rippleHandlers.startPress(event);
-    }
-    handleRippleTouchStart(event) {
-        this.rippleHandlers.startPress(event);
-    }
-    handleRippleDeactivate() {
-        this.rippleHandlers.endPress();
-    }
-    handleRippleMouseEnter() {
-        this.rippleHandlers.startHover();
-    }
-    handleRippleMouseLeave() {
-        this.rippleHandlers.endHover();
-    }
-    handleRippleFocus() {
-        this.rippleHandlers.startFocus();
-    }
-    handleRippleBlur() {
-        this.rippleHandlers.endFocus();
-    }
-}
-__decorate([
-    e$5({ type: Boolean, reflect: true })
-], IconButtonBase.prototype, "disabled", void 0);
-__decorate([
-    e$5({ type: String })
-], IconButtonBase.prototype, "icon", void 0);
-__decorate([
-    ariaProperty,
-    e$5({ type: String, attribute: 'aria-label' })
-], IconButtonBase.prototype, "ariaLabel", void 0);
-__decorate([
-    ariaProperty,
-    e$5({ type: String, attribute: 'aria-haspopup' })
-], IconButtonBase.prototype, "ariaHasPopup", void 0);
-__decorate([
-    i$2('button')
-], IconButtonBase.prototype, "buttonElement", void 0);
-__decorate([
-    e$3('mwc-ripple')
-], IconButtonBase.prototype, "ripple", void 0);
-__decorate([
-    t$1()
-], IconButtonBase.prototype, "shouldRenderRipple", void 0);
-__decorate([
-    e$4({ passive: true })
-], IconButtonBase.prototype, "handleRippleMouseDown", null);
-__decorate([
-    e$4({ passive: true })
-], IconButtonBase.prototype, "handleRippleTouchStart", null);
-
-/**
- * @license
- * Copyright 2018 Google LLC
- * SPDX-License-Identifier: Apache-2.0
- */
-/** @soyCompatible */
-let IconButton = class IconButton extends IconButtonBase {
-};
-IconButton.styles = [styles$3];
-IconButton = __decorate([
-    e$6('mwc-icon-button')
-], IconButton);
-
 function newEditEvent(edit) {
     return new CustomEvent('oscd-edit', {
         composed: true,
@@ -8238,6 +8198,138 @@ function singletonIdentity(e) {
 function idNamingIdentity(e) {
     return `#${e.id}`;
 }
+
+/**
+ * @license
+ * Copyright 2018 Google LLC
+ * SPDX-License-Identifier: Apache-2.0
+ */
+/** @soyCompatible */
+class IconButtonBase extends s$1 {
+    constructor() {
+        super(...arguments);
+        this.disabled = false;
+        this.icon = '';
+        this.shouldRenderRipple = false;
+        this.rippleHandlers = new RippleHandlers(() => {
+            this.shouldRenderRipple = true;
+            return this.ripple;
+        });
+    }
+    /** @soyTemplate */
+    renderRipple() {
+        return this.shouldRenderRipple ? x `
+            <mwc-ripple
+                .disabled="${this.disabled}"
+                unbounded>
+            </mwc-ripple>` :
+            '';
+    }
+    focus() {
+        const buttonElement = this.buttonElement;
+        if (buttonElement) {
+            this.rippleHandlers.startFocus();
+            buttonElement.focus();
+        }
+    }
+    blur() {
+        const buttonElement = this.buttonElement;
+        if (buttonElement) {
+            this.rippleHandlers.endFocus();
+            buttonElement.blur();
+        }
+    }
+    /** @soyTemplate */
+    render() {
+        return x `<button
+        class="mdc-icon-button mdc-icon-button--display-flex"
+        aria-label="${this.ariaLabel || this.icon}"
+        aria-haspopup="${l$1(this.ariaHasPopup)}"
+        ?disabled="${this.disabled}"
+        @focus="${this.handleRippleFocus}"
+        @blur="${this.handleRippleBlur}"
+        @mousedown="${this.handleRippleMouseDown}"
+        @mouseenter="${this.handleRippleMouseEnter}"
+        @mouseleave="${this.handleRippleMouseLeave}"
+        @touchstart="${this.handleRippleTouchStart}"
+        @touchend="${this.handleRippleDeactivate}"
+        @touchcancel="${this.handleRippleDeactivate}"
+    >${this.renderRipple()}
+    ${this.icon ? x `<i class="material-icons">${this.icon}</i>` : ''}
+    <span
+      ><slot></slot
+    ></span>
+  </button>`;
+    }
+    handleRippleMouseDown(event) {
+        const onUp = () => {
+            window.removeEventListener('mouseup', onUp);
+            this.handleRippleDeactivate();
+        };
+        window.addEventListener('mouseup', onUp);
+        this.rippleHandlers.startPress(event);
+    }
+    handleRippleTouchStart(event) {
+        this.rippleHandlers.startPress(event);
+    }
+    handleRippleDeactivate() {
+        this.rippleHandlers.endPress();
+    }
+    handleRippleMouseEnter() {
+        this.rippleHandlers.startHover();
+    }
+    handleRippleMouseLeave() {
+        this.rippleHandlers.endHover();
+    }
+    handleRippleFocus() {
+        this.rippleHandlers.startFocus();
+    }
+    handleRippleBlur() {
+        this.rippleHandlers.endFocus();
+    }
+}
+__decorate([
+    e$5({ type: Boolean, reflect: true })
+], IconButtonBase.prototype, "disabled", void 0);
+__decorate([
+    e$5({ type: String })
+], IconButtonBase.prototype, "icon", void 0);
+__decorate([
+    ariaProperty,
+    e$5({ type: String, attribute: 'aria-label' })
+], IconButtonBase.prototype, "ariaLabel", void 0);
+__decorate([
+    ariaProperty,
+    e$5({ type: String, attribute: 'aria-haspopup' })
+], IconButtonBase.prototype, "ariaHasPopup", void 0);
+__decorate([
+    i$2('button')
+], IconButtonBase.prototype, "buttonElement", void 0);
+__decorate([
+    e$3('mwc-ripple')
+], IconButtonBase.prototype, "ripple", void 0);
+__decorate([
+    t$1()
+], IconButtonBase.prototype, "shouldRenderRipple", void 0);
+__decorate([
+    e$4({ passive: true })
+], IconButtonBase.prototype, "handleRippleMouseDown", null);
+__decorate([
+    e$4({ passive: true })
+], IconButtonBase.prototype, "handleRippleTouchStart", null);
+
+/**
+ * @license
+ * Copyright 2018 Google LLC
+ * SPDX-License-Identifier: Apache-2.0
+ */
+/** @soyCompatible */
+let IconButton = class IconButton extends IconButtonBase {
+};
+IconButton.styles = [styles$3];
+IconButton = __decorate([
+    e$6('mwc-icon-button')
+], IconButton);
 
 /**
  * @license
@@ -11091,20 +11183,22 @@ function debounce(callback, delay = 250) {
         }, delay);
     };
 }
+// update in later binding for changed lnInst with ?? ''
 function getFcdaTitleValue(fcdaElement) {
-    return `${fcdaElement.getAttribute('doName')}${fcdaElement.hasAttribute('doName') && fcdaElement.hasAttribute('daName')
+    return `${fcdaElement.getAttribute('doName') ?? ''}${fcdaElement.hasAttribute('doName') && fcdaElement.hasAttribute('daName')
         ? `.`
         : ``}${fcdaElement.getAttribute('daName') ?? ''}`;
 }
+// update in later binding for changed lnInst with ?? ''
 function getFcdaSubtitleValue(fcdaElement) {
     return `${fcdaElement.getAttribute('ldInst')} ${fcdaElement.hasAttribute('ldInst') ? `/` : ''}${fcdaElement.getAttribute('prefix')
         ? ` ${fcdaElement.getAttribute('prefix')}`
-        : ''} ${fcdaElement.getAttribute('lnClass')} ${fcdaElement.getAttribute('lnInst')}`;
+        : ''} ${fcdaElement.getAttribute('lnClass') ?? ''} ${fcdaElement.getAttribute('lnInst') ?? ''}`;
 }
-function extRefPath(extRef) {
-    if (!extRef)
+function lnPath(childElement) {
+    if (!childElement)
         return 'Unknown';
-    const lN = extRef.closest('LN') ?? extRef.closest('LN0');
+    const lN = childElement.closest('LN') ?? childElement.closest('LN0');
     const lDevice = lN.closest('LDevice');
     const ldInst = lDevice?.getAttribute('inst');
     const lnPrefix = lN?.getAttribute('prefix');
@@ -11114,8 +11208,8 @@ function extRefPath(extRef) {
         .filter(a => a !== null)
         .join(' ');
 }
-function getExtRefElementsByIED(ied) {
-    return Array.from(ied.querySelectorAll(':scope > AccessPoint > Server > LDevice > LN > Inputs > ExtRef, :scope > AccessPoint > Server > LDevice > LN0 > Inputs > ExtRef'));
+function getInputsElementsByIed(ied) {
+    return Array.from(ied.querySelectorAll(':scope > AccessPoint > Server > LDevice > LN > Inputs , :scope > AccessPoint > Server > LDevice > LN0 > Inputs '));
 }
 function getFcdaInstDesc(fcda, includeDai) {
     const [doName, daName] = ['doName', 'daName'].map(attr => fcda.getAttribute(attr));
@@ -11127,75 +11221,60 @@ function getFcdaInstDesc(fcda, includeDai) {
         (lN.getAttribute('inst') ?? '') === (fcda.getAttribute('lnInst') ?? ''));
     if (!anyLn)
         return null;
-    let descs;
+    const descs = [];
     const lD = anyLn.closest('LDevice');
-    descs = {
-        lD: {
-            desc: lD?.getAttribute('desc') ?? '',
-            identity: identity(lD),
-            tag: lD.tagName,
-        },
-    };
-    const lnDesc = anyLn.getAttribute('desc');
-    descs = {
-        ...descs,
-        lN: {
-            ...(lnDesc && { desc: lnDesc }),
-            identity: identity(anyLn),
-            tag: anyLn.tagName,
-        },
-    };
+    descs.push({
+        desc: lD?.getAttribute('desc') ?? '',
+        identity: identity(lD),
+        tag: lD.tagName,
+    });
+    descs.push({
+        desc: anyLn?.getAttribute('desc') ?? '',
+        identity: identity(anyLn),
+        tag: anyLn.tagName,
+    });
     const doNames = doName.split('.');
     const doi = anyLn.querySelector(`DOI[name="${doNames[0]}"`);
     if (!doi)
         return descs;
-    const doiDesc = doi?.getAttribute('desc');
-    descs = {
-        ...descs,
-        dOI: {
-            ...(doiDesc && { desc: doiDesc }),
-            identity: identity(doi),
-            tag: doi.tagName,
-        },
-    };
+    descs.push({
+        desc: doi?.getAttribute('desc') ?? '',
+        identity: identity(doi),
+        tag: doi.tagName,
+    });
     let previousDI = doi;
     doNames.slice(1).forEach(sdiName => {
         const sdi = previousDI.querySelector(`SDI[name="${sdiName}"]`);
-        if (sdi)
+        if (sdi) {
             previousDI = sdi;
-        const sdiDesc = sdi?.getAttribute('desc');
-        descs = {
-            ...descs,
-            sDI: {
-                ...(sdiDesc && { desc: sdiDesc }),
+            descs.push({
+                desc: sdi?.getAttribute('desc') ?? '',
                 identity: identity(sdi),
                 tag: sdi.tagName,
-            },
-        };
+            });
+        }
     });
     if (!includeDai || !daName)
         return descs;
     const daNames = daName?.split('.');
     const dai = (previousDI ?? doi).querySelector(`DAI[name="${daNames[0]}"]`);
-    const daiDesc = dai?.getAttribute('desc');
-    descs = {
-        ...descs,
-        dAI: {
-            ...(daiDesc && { desc: daiDesc }),
-            identity: identity(dai),
-            tag: dai.tagName,
-        },
-    };
+    descs.push({
+        desc: dai?.getAttribute('desc') ?? '',
+        identity: identity(dai),
+        tag: dai.tagName,
+    });
     return descs;
 }
 /**
  * Editor for GOOSE and SMV supervision LNs
  */
-class Supervision extends s$1 {
+class Description extends s$1 {
     constructor() {
         super(...arguments);
         this.controlType = 'GOOSE';
         this.selectedIEDs = [];
+        this.anyDataSetExpanded = false;
+        this.anyExtRefSectionExpanded = false;
         this.onFieldInput = debounce((target) => {
             const { value } = target;
             const { id, tag } = target.dataset;
@@ -11228,9 +11307,6 @@ class Supervision extends s$1 {
             });
         }
         return undefined;
-    }
-    firstUpdated() {
-        // this.updateControlBlockInfo();
     }
     updated(_changedProperties) {
         super.updated(_changedProperties);
@@ -11284,75 +11360,231 @@ class Supervision extends s$1 {
       </h2>
     </div>`;
     }
+    updateExtRefSectionExpanded() {
+        if (!this.extRefSectionUI.querySelector('.open')) {
+            this.anyExtRefSectionExpanded = false;
+        }
+        else {
+            this.anyExtRefSectionExpanded = true;
+        }
+        this.extRefExpanderButtonUI.on = this.anyExtRefSectionExpanded;
+    }
+    updateDatasetSectionExpanded() {
+        if (!this.dataSetSectionUI.querySelector('.open')) {
+            this.anyDataSetExpanded = false;
+        }
+        else {
+            this.anyDataSetExpanded = true;
+        }
+        this.dataSetExpanderButtonUI.on = this.anyDataSetExpanded;
+    }
+    renderDataSetFcdas(ds) {
+        return x `${Array.from(ds.querySelectorAll('FCDA')).map(fcda => {
+            const fcdatitle = `${getFcdaSubtitleValue(fcda)} ${getFcdaTitleValue(fcda)}`;
+            const fcdaDescs = getFcdaInstDesc(fcda, false);
+            if (!fcdaDescs)
+                return x `<div class="grouper">
+          <div class="title col">
+            <p>${fcdatitle}</p>
+          </div>
+          <p class="col">${msg('FCDA is incorrectly defined')}</p>
+        </div>`;
+            return x `
+        <div class="grouper">
+          <div class="title col"><p>${fcdatitle}</p></div>
+          ${fcdaDescs.map(desc => x `<mwc-textfield
+              class="col"
+              label="${desc.tag}"
+              value="${desc.desc}"
+              data-id="${desc.identity}"
+              data-tag="${desc.tag}"
+              @input=${(ev) => this.onFieldInput(ev.target)}
+            >
+              ></mwc-textfield
+            >`)}
+        </div>
+      `;
+        })}`;
+    }
+    renderDataSetHeader() {
+        return x `<h1>
+      Datasets<mwc-icon-button-toggle
+        id="datasetSectionExpander"
+        onIcon="expand_less"
+        offIcon="expand_more"
+        @icon-button-toggle-change=${(ev) => {
+            if (ev.target) {
+                const collapseItems = ev.target
+                    .closest('section')
+                    ?.querySelectorAll('div.collapse');
+                const { isOn } = ev.detail;
+                this.anyDataSetExpanded = isOn;
+                // expand/collapse each section
+                collapseItems?.forEach(item => {
+                    const button = item.querySelector('.toggle');
+                    if (!button)
+                        return;
+                    if (!isOn) {
+                        if (item.classList.contains('open'))
+                            item.classList.remove('open');
+                        button.on = false;
+                    }
+                    else {
+                        item.classList.add('open');
+                        button.on = true;
+                    }
+                    // textfields if changing from display: none need layout to be called
+                    item.querySelectorAll('mwc-textfield').forEach(tf => tf.layout());
+                });
+                this.requestUpdate();
+            }
+        }}
+      ></mwc-icon-button-toggle>
+    </h1>`;
+    }
+    renderDataSets() {
+        const datasets = Array.from(this.doc.querySelectorAll(`IED[name="${this.selectedIed?.getAttribute('name') ?? 'Unknown'}"] DataSet`));
+        return x `<section class="dataset">
+      ${this.renderDataSetHeader()}
+      ${Array.from(datasets).map(ds => {
+            const lN = ds.closest('LN') ?? ds.closest('LN0');
+            return x ` <div class="collapse">
+          <div class="collapse-header" data-id="${identity(ds)}">
+            <h3 class="group-title">
+              <mwc-icon-button-toggle
+                class="toggle"
+                onIcon="unfold_less"
+                offIcon="unfold_more"
+                @icon-button-toggle-change=${(ev) => {
+                if (ev.target) {
+                    const collapse = ev.target.closest('.collapse');
+                    if (collapse) {
+                        collapse.classList.toggle('open');
+                        // textfields if changing from display: none need layout to be called
+                        collapse
+                            .querySelectorAll('mwc-textfield')
+                            .forEach(tf => tf.layout());
+                    }
+                    this.updateDatasetSectionExpanded();
+                    this.requestUpdate();
+                }
+            }}
+              ></mwc-icon-button-toggle>
+              ${lnPath(ds)} > ${ds.getAttribute('name')}
+            </h3>
+            <div class="col title group-title">
+              ${this.renderTextField(lN, 'LN')}
+              ${this.renderTextField(ds, 'DataSet')}
+            </div>
+          </div>
+          <div class="collapse-content">${this.renderDataSetFcdas(ds)}</div>
+        </div>`;
+        })}
+    </section>`;
+    }
+    renderInputExtRefs(inputs) {
+        return x `${Array.from(inputs.querySelectorAll('ExtRef')).map(extRef => x `<div class="grouper-extref">
+        <p class="col-extref title">${extRef.getAttribute('intAddr')}</p>
+        ${this.renderTextField(extRef)}
+      </div>`)}`;
+    }
+    renderExtRefsHeader() {
+        return x `<h1>
+      External References
+      <mwc-icon-button-toggle
+        id="extrefSectionExpander"
+        onIcon="expand_less"
+        offIcon="expand_more"
+        @icon-button-toggle-change=${(ev) => {
+            if (ev.target) {
+                const collapseItems = ev.target
+                    .closest('section')
+                    ?.querySelectorAll('div.collapse');
+                const { isOn } = ev.detail;
+                this.anyExtRefSectionExpanded = isOn;
+                collapseItems?.forEach(item => {
+                    const button = item.querySelector('.toggle');
+                    if (!button)
+                        return;
+                    if (!isOn) {
+                        if (item.classList.contains('open'))
+                            item.classList.remove('open');
+                        button.on = false;
+                    }
+                    else {
+                        item.classList.add('open');
+                        button.on = true;
+                    }
+                    item.querySelectorAll('mwc-textfield').forEach(tf => tf.layout());
+                });
+                this.requestUpdate();
+            }
+        }}
+      ></mwc-icon-button-toggle>
+    </h1>`;
+    }
+    renderTextField(sclElement, label = 'desc') {
+        return x `<mwc-textfield
+      outlined
+      class="col title"
+      label="${label}"
+      value="${sclElement.getAttribute('desc') ?? ''}"
+      data-id="${identity(sclElement)}"
+      data-tag="${sclElement.tagName}"
+      @input=${(ev) => this.onFieldInput(ev.target)}
+    >
+      ></mwc-textfield
+    >`;
+    }
+    renderExtRefs() {
+        return x `<section class="extref">
+      ${this.renderExtRefsHeader()}
+      ${getInputsElementsByIed(this.selectedIed).map(input => {
+            const lN = input.closest('LN') ?? input.closest('LN0');
+            return x `<div class="collapse">
+          <div class="collapse-header" data-id="${identity(input)}">
+            <h3 class="group-title">
+              <mwc-icon-button-toggle
+                class="toggle"
+                onIcon="unfold_less"
+                offIcon="unfold_more"
+                @icon-button-toggle-change=${(ev) => {
+                if (ev.target) {
+                    const collapse = ev.target.closest('.collapse');
+                    if (collapse)
+                        collapse.classList.toggle('open');
+                    this.requestUpdate();
+                }
+                this.updateExtRefSectionExpanded();
+                const collapseItem = ev.target
+                    .closest('div.collapse')
+                    ?.querySelector('div.collapse-content');
+                if (collapseItem)
+                    collapseItem
+                        .querySelectorAll('mwc-textfield')
+                        .forEach(tf => tf.layout());
+            }}
+              ></mwc-icon-button-toggle>
+              ${lnPath(input)} > Inputs
+            </h3>
+            <div class="col title group-title">
+              ${this.renderTextField(lN, 'LN')}
+              ${this.renderTextField(input, 'Inputs')}
+            </div>
+          </div>
+          <div class="collapse-content">${this.renderInputExtRefs(input)}</div>
+        </div>`;
+        })}
+    </section>`;
+    }
     render() {
         if (!this.doc || !this.selectedIed)
-            return x ``;
-        // if (!this.selectedIed) return html`<h1>No IEDs present</h1>`;
-        const datasets = Array.from(this.doc.querySelectorAll(`IED[name="${this.selectedIed?.getAttribute('name') ?? 'Unknown'}"] DataSet`));
-        // <FCDA ldInst="ANN" prefix="PSV" lnClass="GGIO" lnInst="1" doName="Ind64" daName="stVal" fc="ST"/>
-        const labels = {
-            lD: 'Logical Device',
-            lN: 'Logical Node',
-            dOI: 'Data Object',
-            sDO: 'Sub Data Object',
-            dA: 'Data Attribute',
-        };
-        const usedInfo = ['lD', 'lN', 'dOI'];
+            return x `<h1>${msg('No IEDs present')}</h1>`;
         return x `<div id="controlSection">${this.renderIedSelector()}</div>
-      <section>
-        <h1>Datasets</h1>
-        ${Array.from(datasets).map(ds => 
-        // <FCDA ldInst="ANN" prefix="PSV" lnClass="GGIO" lnInst="1" doName="Ind64" daName="stVal" fc="ST"/>
-        x `
-              <h3>${ds.getAttribute('name')}</h3>
-
-              ${Array.from(ds.querySelectorAll('FCDA')).map(fcda => {
-            const fcdatitle = `${getFcdaSubtitleValue(fcda)} ${getFcdaTitleValue(fcda)}`;
-            const descriptions = getFcdaInstDesc(fcda, false);
-            return x `
-                  <div class="grouper">
-                    <div class="title col"><p>${fcdatitle}</p></div>
-                    ${descriptions
-                ? usedInfo.map(descType => x `<mwc-textfield
-                                class="col rounded"
-                                label="${labels[descType]}"
-                                outlined
-                                value="${descriptions[descType]?.desc ?? ''}"
-                                data-id="${descriptions[descType]?.identity}"
-                                data-tag="${descriptions[descType]?.tag}"
-                                @input=${(ev) => this.onFieldInput(ev.target)}
-                              >
-                                ></mwc-textfield
-                              >`)
-                : A}
-                    </div>
-                  </div>
-                `;
-        })}
-            `)}
-      </section>
-      <section>
-        <h1>External References</h1>
-        ${getExtRefElementsByIED(this.selectedIed).map(extRef => x `<div class="grouper-extref">
-              <p class="col-extref">
-                ${extRefPath(extRef)}: ${extRef.getAttribute('intAddr')}
-              </p>
-              <mwc-textfield
-                class="col-extref rounded"
-                label="description"
-                outlined
-                value="${extRef.getAttribute('desc') ?? ''}"
-                data-id="${identity(extRef)}"
-                data-tag="${extRef.tagName}"
-                @input=${(ev) => this.onFieldInput(ev.target)}
-              >
-                ></mwc-textfield
-              >
-            </div>`)}
-      </section>`;
+      ${this.renderDataSets()}${this.renderExtRefs()}`;
     }
 }
-Supervision.styles = i$5 `
+Description.styles = i$5 `
     ${styles}
 
     :host {
@@ -11374,10 +11606,13 @@ Supervision.styles = i$5 `
       line-height: 48px;
       padding-left: 0.3em;
       transition: background-color 150ms linear;
+      min-width: 300px;
+      max-width: 500px;
     }
 
     #iedSelector {
       display: inline-flex;
+      padding-left: 20px;
     }
 
     #iedFilter {
@@ -11393,17 +11628,20 @@ Supervision.styles = i$5 `
       display: flex;
       width: 100%;
       align-items: center;
+      padding-left: 20px;
     }
 
     .grouper-extref {
       display: flex;
       width: 50%%;
       align-items: center;
+      padding-left: 20px;
     }
 
     .col {
       flex: 1 1 25%;
       padding: 10px;
+      max-width: 400px;
     }
 
     .col-extref {
@@ -11412,31 +11650,67 @@ Supervision.styles = i$5 `
       padding: 10px;
     }
 
-    h3 {
+    .title {
+      flex: 0 0 350px;
+      padding-left: 10px;
+    }
+
+    /* h3 {
       font-weight: 500;
+    } */
+
+    .collapse-content {
+      display: none;
+    }
+
+    .collapse.open .collapse-content {
+      display: block;
+    }
+
+    .group-title {
+      display: inline-flex;
+      align-items: center;
     }
   `;
 __decorate([
     e$5({ attribute: false })
-], Supervision.prototype, "doc", void 0);
+], Description.prototype, "doc", void 0);
 __decorate([
     e$5()
-], Supervision.prototype, "docName", void 0);
+], Description.prototype, "docName", void 0);
 __decorate([
     e$5()
-], Supervision.prototype, "editCount", void 0);
+], Description.prototype, "editCount", void 0);
 __decorate([
     e$5()
-], Supervision.prototype, "controlType", void 0);
+], Description.prototype, "controlType", void 0);
 __decorate([
     t$1()
-], Supervision.prototype, "iedList", null);
+], Description.prototype, "iedList", null);
 __decorate([
     t$1()
-], Supervision.prototype, "selectedIEDs", void 0);
+], Description.prototype, "selectedIEDs", void 0);
 __decorate([
     t$1()
-], Supervision.prototype, "selectedIed", null);
+], Description.prototype, "selectedIed", null);
+__decorate([
+    i$2('section.dataset')
+], Description.prototype, "dataSetSectionUI", void 0);
+__decorate([
+    i$2('#datasetSectionExpander')
+], Description.prototype, "dataSetExpanderButtonUI", void 0);
+__decorate([
+    i$2('section.extref')
+], Description.prototype, "extRefSectionUI", void 0);
+__decorate([
+    i$2('#extrefSectionExpander')
+], Description.prototype, "extRefExpanderButtonUI", void 0);
+__decorate([
+    e$5()
+], Description.prototype, "anyDataSetExpanded", void 0);
+__decorate([
+    e$5()
+], Description.prototype, "anyExtRefSectionExpanded", void 0);
 
-export { Supervision as default, getFcdaSubtitleValue };
+export { Description as default, getFcdaSubtitleValue };
 //# sourceMappingURL=oscd-description.js.map
