@@ -11290,7 +11290,7 @@ class Description extends s$1 {
                 this.dispatchEvent(newEditEvent(edit));
                 this.requestUpdate();
             }
-        }, 300);
+        }, 1000);
     }
     get iedList() {
         return this.doc
@@ -11446,51 +11446,51 @@ class Description extends s$1 {
         const datasets = Array.from(this.doc.querySelectorAll(`IED[name="${this.selectedIed?.getAttribute('name') ?? 'Unknown'}"] DataSet`));
         return x `<section class="dataset">
       ${this.renderDataSetHeader()}
-      ${Array.from(datasets).map(ds => {
-            const lN = ds.closest('LN') ?? ds.closest('LN0');
-            return x ` <div class="collapse">
-          <div class="collapse-header" data-id="${identity(ds)}">
-            <h3 class="group-title">
-              <mwc-icon-button-toggle
-                class="toggle"
-                onIcon="unfold_less"
-                offIcon="unfold_more"
-                @icon-button-toggle-change=${(ev) => {
-                if (ev.target) {
-                    const collapse = ev.target.closest('.collapse');
-                    if (collapse) {
-                        collapse.classList.toggle('open');
-                        // textfields if changing from display: none need layout to be called
-                        collapse
-                            .querySelectorAll('mwc-textfield')
-                            .forEach(tf => tf.layout());
-                    }
-                    this.updateDatasetSectionExpanded();
-                    this.requestUpdate();
+      ${Array.from(datasets).map(ds => 
+        // const lN = ds.closest('LN') ?? ds.closest('LN0');
+        x ` <div class="collapse">
+            <div class="collapse-header" data-id="${identity(ds)}">
+              <h3 class="group-title">
+                <mwc-icon-button-toggle
+                  class="toggle"
+                  onIcon="unfold_less"
+                  offIcon="unfold_more"
+                  @icon-button-toggle-change=${(ev) => {
+            if (ev.target) {
+                const collapse = ev.target.closest('.collapse');
+                if (collapse) {
+                    collapse.classList.toggle('open');
+                    // textfields if changing from display: none need layout to be called
+                    collapse
+                        .querySelectorAll('mwc-textfield')
+                        .forEach(tf => tf.layout());
                 }
-            }}
-              ></mwc-icon-button-toggle>
-              ${lnPath(ds)} > ${ds.getAttribute('name')}
-            </h3>
-            <div class="col title group-title">
-              ${this.renderTextField(lN, 'LN')}
-              ${this.renderTextField(ds, 'DataSet')}
+                this.updateDatasetSectionExpanded();
+                this.requestUpdate();
+            }
+        }}
+                ></mwc-icon-button-toggle>
+                ${lnPath(ds)} > ${ds.getAttribute('name')}
+              </h3>
+              <div class="col title group-title">
+                ${this.renderTextField(ds)}
+              </div>
             </div>
-          </div>
-          <div class="collapse-content">${this.renderDataSetFcdas(ds)}</div>
-        </div>`;
-        })}
+            <div class="collapse-content">${this.renderDataSetFcdas(ds)}</div>
+          </div>`)}
     </section>`;
     }
     renderInputExtRefs(inputs) {
-        return x `${Array.from(inputs.querySelectorAll('ExtRef')).map(extRef => x `<div class="grouper-extref">
-        <p class="col-extref title">${extRef.getAttribute('intAddr')}</p>
-        ${this.renderTextField(extRef)}
-      </div>`)}`;
+        return x `${Array.from(inputs.querySelectorAll('ExtRef'))
+            .filter(extRef => extRef.hasAttribute('intAddr'))
+            .map(extRef => x `<div class="grouper-extref">
+          <p class="col-extref title">${extRef.getAttribute('intAddr')}</p>
+          ${this.renderTextField(extRef)}
+        </div>`)}`;
     }
     renderExtRefsHeader() {
         return x `<h1>
-      External References
+      External References (Later Binding)
       <mwc-icon-button-toggle
         id="extrefSectionExpander"
         onIcon="expand_less"
@@ -11539,42 +11539,42 @@ class Description extends s$1 {
     renderExtRefs() {
         return x `<section class="extref">
       ${this.renderExtRefsHeader()}
-      ${getInputsElementsByIed(this.selectedIed).map(input => {
-            const lN = input.closest('LN') ?? input.closest('LN0');
-            return x `<div class="collapse">
-          <div class="collapse-header" data-id="${identity(input)}">
-            <h3 class="group-title">
-              <mwc-icon-button-toggle
-                class="toggle"
-                onIcon="unfold_less"
-                offIcon="unfold_more"
-                @icon-button-toggle-change=${(ev) => {
-                if (ev.target) {
-                    const collapse = ev.target.closest('.collapse');
-                    if (collapse)
-                        collapse.classList.toggle('open');
-                    this.requestUpdate();
-                }
-                this.updateExtRefSectionExpanded();
-                const collapseItem = ev.target
-                    .closest('div.collapse')
-                    ?.querySelector('div.collapse-content');
-                if (collapseItem)
-                    collapseItem
-                        .querySelectorAll('mwc-textfield')
-                        .forEach(tf => tf.layout());
-            }}
-              ></mwc-icon-button-toggle>
-              ${lnPath(input)} > Inputs
-            </h3>
-            <div class="col title group-title">
-              ${this.renderTextField(lN, 'LN')}
-              ${this.renderTextField(input, 'Inputs')}
+      ${getInputsElementsByIed(this.selectedIed).map(input => 
+        // const lN = input.closest('LN') ?? input.closest('LN0');
+        x `<div class="collapse">
+            <div class="collapse-header" data-id="${identity(input)}">
+              <h3 class="group-title">
+                <mwc-icon-button-toggle
+                  class="toggle"
+                  onIcon="unfold_less"
+                  offIcon="unfold_more"
+                  @icon-button-toggle-change=${(ev) => {
+            if (ev.target) {
+                const collapse = ev.target.closest('.collapse');
+                if (collapse)
+                    collapse.classList.toggle('open');
+                this.requestUpdate();
+            }
+            this.updateExtRefSectionExpanded();
+            const collapseItem = ev.target
+                .closest('div.collapse')
+                ?.querySelector('div.collapse-content');
+            if (collapseItem)
+                collapseItem
+                    .querySelectorAll('mwc-textfield')
+                    .forEach(tf => tf.layout());
+        }}
+                ></mwc-icon-button-toggle>
+                ${lnPath(input)} > Inputs
+              </h3>
+              <div class="col title group-title">
+                ${this.renderTextField(input)}
+              </div>
             </div>
-          </div>
-          <div class="collapse-content">${this.renderInputExtRefs(input)}</div>
-        </div>`;
-        })}
+            <div class="collapse-content">
+              ${this.renderInputExtRefs(input)}
+            </div>
+          </div>`)}
     </section>`;
     }
     render() {
@@ -11612,7 +11612,7 @@ Description.styles = i$5 `
 
     #iedSelector {
       display: inline-flex;
-      padding-left: 20px;
+      padding: 20px 0 0 20px;
     }
 
     #iedFilter {
