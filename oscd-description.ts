@@ -401,58 +401,60 @@ export default class Description extends LitElement {
     );
     return html`<section class="dataset">
       ${this.renderDataSetHeader()}
-      ${Array.from(datasets).map(ds => {
-        const lN = ds.closest('LN') ?? ds.closest('LN0');
-        return html` <div class="collapse">
-          <div class="collapse-header" data-id="${identity(ds)}">
-            <h3 class="group-title">
-              <mwc-icon-button-toggle
-                class="toggle"
-                onIcon="unfold_less"
-                offIcon="unfold_more"
-                @icon-button-toggle-change=${(ev: CustomEvent) => {
-                  if (ev.target) {
-                    const collapse = (<HTMLElement>ev.target).closest(
-                      '.collapse'
-                    );
-                    if (collapse) {
-                      collapse.classList.toggle('open');
+      ${Array.from(datasets).map(
+        ds =>
+          // const lN = ds.closest('LN') ?? ds.closest('LN0');
+          html` <div class="collapse">
+            <div class="collapse-header" data-id="${identity(ds)}">
+              <h3 class="group-title">
+                <mwc-icon-button-toggle
+                  class="toggle"
+                  onIcon="unfold_less"
+                  offIcon="unfold_more"
+                  @icon-button-toggle-change=${(ev: CustomEvent) => {
+                    if (ev.target) {
+                      const collapse = (<HTMLElement>ev.target).closest(
+                        '.collapse'
+                      );
+                      if (collapse) {
+                        collapse.classList.toggle('open');
 
-                      // textfields if changing from display: none need layout to be called
-                      collapse
-                        .querySelectorAll('mwc-textfield')
-                        .forEach(tf => tf.layout());
+                        // textfields if changing from display: none need layout to be called
+                        collapse
+                          .querySelectorAll('mwc-textfield')
+                          .forEach(tf => tf.layout());
+                      }
+                      this.updateDatasetSectionExpanded();
+                      this.requestUpdate();
                     }
-                    this.updateDatasetSectionExpanded();
-                    this.requestUpdate();
-                  }
-                }}
-              ></mwc-icon-button-toggle>
-              ${lnPath(ds)} > ${ds.getAttribute('name')}
-            </h3>
-            <div class="col title group-title">
-              ${this.renderTextField(lN!, 'LN')}
-              ${this.renderTextField(ds!, 'DataSet')}
+                  }}
+                ></mwc-icon-button-toggle>
+                ${lnPath(ds)} > ${ds.getAttribute('name')}
+              </h3>
+              <div class="col title group-title">
+                ${this.renderTextField(ds!)}
+              </div>
             </div>
-          </div>
-          <div class="collapse-content">${this.renderDataSetFcdas(ds)}</div>
-        </div>`;
-      })}
+            <div class="collapse-content">${this.renderDataSetFcdas(ds)}</div>
+          </div>`
+      )}
     </section>`;
   }
 
   protected renderInputExtRefs(inputs: Element): TemplateResult {
-    return html`${Array.from(inputs.querySelectorAll('ExtRef')).map(
-      extRef => html`<div class="grouper-extref">
-        <p class="col-extref title">${extRef.getAttribute('intAddr')}</p>
-        ${this.renderTextField(extRef)}
-      </div>`
-    )}`;
+    return html`${Array.from(inputs.querySelectorAll('ExtRef'))
+      .filter(extRef => extRef.hasAttribute('intAddr'))
+      .map(
+        extRef => html`<div class="grouper-extref">
+          <p class="col-extref title">${extRef.getAttribute('intAddr')}</p>
+          ${this.renderTextField(extRef)}
+        </div>`
+      )}`;
   }
 
   protected renderExtRefsHeader(): TemplateResult {
     return html`<h1>
-      External References
+      External References (Later Binding)
       <mwc-icon-button-toggle
         id="extrefSectionExpander"
         onIcon="expand_less"
@@ -507,45 +509,47 @@ export default class Description extends LitElement {
   protected renderExtRefs(): TemplateResult {
     return html`<section class="extref">
       ${this.renderExtRefsHeader()}
-      ${getInputsElementsByIed(this.selectedIed!).map(input => {
-        const lN = input.closest('LN') ?? input.closest('LN0');
-        return html`<div class="collapse">
-          <div class="collapse-header" data-id="${identity(input)}">
-            <h3 class="group-title">
-              <mwc-icon-button-toggle
-                class="toggle"
-                onIcon="unfold_less"
-                offIcon="unfold_more"
-                @icon-button-toggle-change=${(ev: CustomEvent) => {
-                  if (ev.target) {
-                    const collapse = (<HTMLElement>ev.target).closest(
-                      '.collapse'
-                    );
-                    if (collapse) collapse.classList.toggle('open');
-                    this.requestUpdate();
-                  }
-                  this.updateExtRefSectionExpanded();
+      ${getInputsElementsByIed(this.selectedIed!).map(
+        input =>
+          // const lN = input.closest('LN') ?? input.closest('LN0');
+          html`<div class="collapse">
+            <div class="collapse-header" data-id="${identity(input)}">
+              <h3 class="group-title">
+                <mwc-icon-button-toggle
+                  class="toggle"
+                  onIcon="unfold_less"
+                  offIcon="unfold_more"
+                  @icon-button-toggle-change=${(ev: CustomEvent) => {
+                    if (ev.target) {
+                      const collapse = (<HTMLElement>ev.target).closest(
+                        '.collapse'
+                      );
+                      if (collapse) collapse.classList.toggle('open');
+                      this.requestUpdate();
+                    }
+                    this.updateExtRefSectionExpanded();
 
-                  const collapseItem = (<HTMLElement>ev.target)
-                    .closest('div.collapse')
-                    ?.querySelector('div.collapse-content');
+                    const collapseItem = (<HTMLElement>ev.target)
+                      .closest('div.collapse')
+                      ?.querySelector('div.collapse-content');
 
-                  if (collapseItem)
-                    collapseItem
-                      .querySelectorAll('mwc-textfield')
-                      .forEach(tf => tf.layout());
-                }}
-              ></mwc-icon-button-toggle>
-              ${lnPath(input)} > Inputs
-            </h3>
-            <div class="col title group-title">
-              ${this.renderTextField(lN!, 'LN')}
-              ${this.renderTextField(input, 'Inputs')}
+                    if (collapseItem)
+                      collapseItem
+                        .querySelectorAll('mwc-textfield')
+                        .forEach(tf => tf.layout());
+                  }}
+                ></mwc-icon-button-toggle>
+                ${lnPath(input)} > Inputs
+              </h3>
+              <div class="col title group-title">
+                ${this.renderTextField(input)}
+              </div>
             </div>
-          </div>
-          <div class="collapse-content">${this.renderInputExtRefs(input)}</div>
-        </div>`;
-      })}
+            <div class="collapse-content">
+              ${this.renderInputExtRefs(input)}
+            </div>
+          </div>`
+      )}
     </section>`;
   }
 
@@ -573,7 +577,7 @@ export default class Description extends LitElement {
       this.dispatchEvent(newEditEvent(edit));
       this.requestUpdate();
     }
-  }, 300);
+  }, 1000);
 
   static styles = css`
     ${styles}
@@ -603,7 +607,7 @@ export default class Description extends LitElement {
 
     #iedSelector {
       display: inline-flex;
-      padding-left: 20px;
+      padding: 20px 0 0 20px;
     }
 
     #iedFilter {
