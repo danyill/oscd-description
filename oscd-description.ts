@@ -75,7 +75,7 @@ export function getFcdaSubtitleValue(fcdaElement: Element): string {
   }`;
 }
 
-function lnPath(childElement: Element): string {
+function getLnTitle(childElement: Element): string {
   if (!childElement) return 'Unknown';
   const lN = childElement.closest('LN') ?? childElement.closest('LN0');
   const lDevice = lN!.closest('LDevice');
@@ -429,7 +429,7 @@ export default class Description extends LitElement {
                     }
                   }}
                 ></mwc-icon-button-toggle>
-                ${lnPath(ds)} > ${ds.getAttribute('name')}
+                ${getLnTitle(ds)} > ${ds.getAttribute('name')}
               </h3>
               <div class="col title group-title">
                 ${this.renderTextField(ds!)}
@@ -539,7 +539,7 @@ export default class Description extends LitElement {
                         .forEach(tf => tf.layout());
                   }}
                 ></mwc-icon-button-toggle>
-                ${lnPath(input)} > Inputs
+                ${getLnTitle(input)} > Inputs
               </h3>
               <div class="col title group-title">
                 ${this.renderTextField(input)}
