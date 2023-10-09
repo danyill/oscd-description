@@ -11195,7 +11195,7 @@ function getFcdaSubtitleValue(fcdaElement) {
         ? ` ${fcdaElement.getAttribute('prefix')}`
         : ''} ${fcdaElement.getAttribute('lnClass') ?? ''} ${fcdaElement.getAttribute('lnInst') ?? ''}`;
 }
-function lnPath(childElement) {
+function getLnTitle(childElement) {
     if (!childElement)
         return 'Unknown';
     const lN = childElement.closest('LN') ?? childElement.closest('LN0');
@@ -11470,7 +11470,7 @@ class Description extends s$1 {
             }
         }}
                 ></mwc-icon-button-toggle>
-                ${lnPath(ds)} > ${ds.getAttribute('name')}
+                ${getLnTitle(ds)} > ${ds.getAttribute('name')}
               </h3>
               <div class="col title group-title">
                 ${this.renderTextField(ds)}
@@ -11565,7 +11565,7 @@ class Description extends s$1 {
                     .forEach(tf => tf.layout());
         }}
                 ></mwc-icon-button-toggle>
-                ${lnPath(input)} > Inputs
+                ${getLnTitle(input)} > Inputs
               </h3>
               <div class="col title group-title">
                 ${this.renderTextField(input)}
